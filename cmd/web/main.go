@@ -1,0 +1,52 @@
+package main
+
+import (
+	"fmt"
+	"github.com/alexedwards/scs/v2"
+	"github.com/loidinhm31/access-system/pkg/config"
+	"github.com/loidinhm31/access-system/pkg/handlers"
+	"github.com/loidinhm31/access-system/pkg/render"
+	"log"
+	"net/http"
+	"time"
+)
+
+const portNumber = ":8080"
+
+var app config.AppConfig
+var sessionManager *scs.SessionManager
+
+func main() {
+
+	app.InProduction = false
+
+	sessionManager = scs.New()
+	sessionManager.Lifetime = 24 * time.Hour
+	sessionManager.Cookie.Persist = true
+	sessionManager.Cookie.SameSite = http.SameSiteLaxMode
+	sessionManager.Cookie.Secure = app.InProduction
+
+	app.SessionManager = sessionManager
+
+	templateCache, err := render.CreateTemplateCache()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app.TemplateCache = templateCache
+	app.UseCache = false
+
+	repo := handlers.CreateNewRepo(&app)
+	handlers.SetRepository(repo)
+
+	render.NewTemplates(&app)
+
+	log.Println(fmt.Sprintf("Starting application on port %s", portNumber))
+
+	server := &http.Server{
+		Addr:    portNumber,
+		Handler: routes(&app),
+	}
+	err = server.ListenAndServe()
+	log.Fatal(err)
+}
