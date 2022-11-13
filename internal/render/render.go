@@ -2,8 +2,9 @@ package render
 
 import (
 	"bytes"
-	"github.com/loidinhm31/access-system/pkg/config"
-	"github.com/loidinhm31/access-system/pkg/models"
+	"github.com/justinas/nosurf"
+	"github.com/loidinhm31/access-system/internal/config"
+	"github.com/loidinhm31/access-system/internal/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -16,7 +17,7 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func DrawTemplate(w http.ResponseWriter, tmpl string, templateData *models.TemplateData) {
+func DrawTemplate(w http.ResponseWriter, r *http.Request, tmpl string, templateData *models.TemplateData) {
 	var templateCache map[string]*template.Template
 
 	if app.UseCache {
@@ -34,7 +35,7 @@ func DrawTemplate(w http.ResponseWriter, tmpl string, templateData *models.Templ
 
 	buff := new(bytes.Buffer)
 
-	templateData = addDefaultData(templateData)
+	templateData = addDefaultData(templateData, r)
 
 	_ = t.Execute(buff, templateData)
 
@@ -78,7 +79,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	return someCache, nil
 }
 
-func addDefaultData(templateData *models.TemplateData) *models.TemplateData {
-
+func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.TemplateData {
+	templateData.CSRFToken = nosurf.Token(r)
 	return templateData
 }
