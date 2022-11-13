@@ -20,28 +20,28 @@ func DrawTemplate(w http.ResponseWriter, tmpl string, templateData *models.Templ
 	var templateCache map[string]*template.Template
 
 	if app.UseCache {
-		// get the template cache from the app config
+		// get the t cache from the app config
 		templateCache = app.TemplateCache
 	} else {
 		templateCache, _ = CreateTemplateCache()
 	}
 
-	// get requested template from cache
-	template, ok := templateCache[tmpl]
+	// get requested t from cache
+	t, ok := templateCache[tmpl]
 	if !ok {
-		log.Fatal("Could not get template from template cache")
+		log.Fatal("Could not get t from t cache")
 	}
 
 	buff := new(bytes.Buffer)
 
 	templateData = addDefaultData(templateData)
 
-	_ = template.Execute(buff, templateData)
+	_ = t.Execute(buff, templateData)
 
-	// render the template
+	// render the t
 	_, err := buff.WriteTo(w)
 	if err != nil {
-		log.Println("Error writing template", err)
+		log.Println("Error writing t", err)
 	}
 }
 
