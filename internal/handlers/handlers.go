@@ -84,6 +84,12 @@ func (m *Repository) PostReservation(writer http.ResponseWriter, request *http.R
 			Data: data,
 		})
 	}
+
+	m.App.SessionManager.Put(request.Context(), "reservation", reservation) // store reservation to the session
+	m.App.SessionManager.Put(request.Context(), "success", "Submit")        // push success alert
+
+	// redirect to another page, avoid submitting one more time
+	http.Redirect(writer, request, "/reservation-summary", http.StatusSeeOther)
 }
 
 func (m *Repository) Generals(writer http.ResponseWriter, request *http.Request) {
@@ -107,4 +113,22 @@ func (m *Repository) PostAvailability(writer http.ResponseWriter, request *http.
 
 func (m *Repository) Contact(writer http.ResponseWriter, request *http.Request) {
 	render.DrawTemplate(writer, request, "contact.page.tmpl", &models.TemplateData{})
+}
+
+func (m *Repository) ReservationSummary(writer http.ResponseWriter, request *http.Request) {
+	reservation, ok := m.App.SessionManager.Get(request.Context(), "reservation").(models.Reservation)
+	if !ok {
+		log.Println("Cannot get item from session")
+		m.App.SessionManager.Put(request.Context(), "error", "Can't get reservation from session")
+		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	m.App.SessionManager.Remove(request.Context(), "reservation") // remove session data for reservation
+	data := make(map[string]interface{})
+	data["reservation"] = reservation
+
+	render.DrawTemplate(writer, request, "reservation-summary.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }

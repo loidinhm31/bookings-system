@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/loidinhm31/access-system/internal/config"
 	"github.com/loidinhm31/access-system/internal/handlers"
+	"github.com/loidinhm31/access-system/internal/models"
 	"github.com/loidinhm31/access-system/internal/render"
 	"log"
 	"net/http"
@@ -17,7 +19,10 @@ var app config.AppConfig
 var sessionManager *scs.SessionManager
 
 func main() {
+	// Values using in the session
+	gob.Register(models.Reservation{})
 
+	// production value
 	app.InProduction = false
 
 	sessionManager = scs.New()

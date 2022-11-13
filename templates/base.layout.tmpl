@@ -10,7 +10,8 @@
         <title>My Nice Page</title>
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
-              integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+              integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
+              crossorigin="anonymous">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.1.2/dist/css/datepicker-bs4.min.css">
         <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
@@ -130,9 +131,21 @@
             })
         }
 
+        {{with .Error}}
+        notify("{{.}}", "error")
+        {{end}}
+
+        {{with .Flash}}
+        notify("{{.}}", "success")
+        {{end}}
+
+        {{with .Warning}}
+        notify("{{.}}", "warning")
+        {{end}}
+
         function Prompt() {
             let toast = function (c) {
-                const{
+                const {
                     msg = '',
                     icon = 'success',
                     position = 'top-end',
@@ -194,16 +207,16 @@
                     title = "",
                 } = c;
 
-                const { value: result } = await Swal.fire({
+                const {value: result} = await Swal.fire({
                     title: title,
                     html: msg,
                     backdrop: true,
                     focusConfirm: false,
                     showCancelButton: true,
                     willOpen: () => {
-                       if (c.willOpen !== undefined) {
-                           c.willOpen();
-                       }
+                        if (c.willOpen !== undefined) {
+                            c.willOpen();
+                        }
                     },
                     didOpen: () => {
                         if (c.didOpen !== undefined) {

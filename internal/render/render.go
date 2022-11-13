@@ -80,6 +80,11 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 }
 
 func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.TemplateData {
+	// Push message in the session for the next time page is displayed
+	templateData.Flash = app.SessionManager.PopString(r.Context(), "success")
+	templateData.Error = app.SessionManager.PopString(r.Context(), "error")
+	templateData.Warning = app.SessionManager.PopString(r.Context(), "warning")
+
 	templateData.CSRFToken = nosurf.Token(r)
 	return templateData
 }
