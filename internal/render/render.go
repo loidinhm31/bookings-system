@@ -17,11 +17,13 @@ import (
 var app *config.AppConfig
 var functions = template.FuncMap{}
 
-func NewTemplates(a *config.AppConfig) {
+// NewRenderer sets the config for the template package
+func NewRenderer(a *config.AppConfig) {
 	app = a
 }
 
-func DrawTemplate(w http.ResponseWriter, r *http.Request, tmpl string, templateData *models.TemplateData) error {
+// Template renders templates using html/template
+func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData *models.TemplateData) error {
 	var templateCache map[string]*template.Template
 
 	if app.UseCache {

@@ -34,11 +34,11 @@ func NewHandlers(r *Repository) {
 }
 
 func (m *Repository) Home(writer http.ResponseWriter, request *http.Request) {
-	render.DrawTemplate(writer, request, "home.page.tmpl", &models.TemplateData{})
+	render.Template(writer, request, "home.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) About(writer http.ResponseWriter, request *http.Request) {
-	render.DrawTemplate(writer, request, "about.page.tmpl", &models.TemplateData{})
+	render.Template(writer, request, "about.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) Reservation(writer http.ResponseWriter, request *http.Request) {
@@ -46,7 +46,7 @@ func (m *Repository) Reservation(writer http.ResponseWriter, request *http.Reque
 	data := make(map[string]interface{})
 	data["reservation"] = emptyReservation
 
-	render.DrawTemplate(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
+	render.Template(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
 		Form: forms.New(nil),
 	})
 }
@@ -74,7 +74,7 @@ func (m *Repository) PostReservation(writer http.ResponseWriter, request *http.R
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
 
-		render.DrawTemplate(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
+		render.Template(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -88,15 +88,15 @@ func (m *Repository) PostReservation(writer http.ResponseWriter, request *http.R
 }
 
 func (m *Repository) Generals(writer http.ResponseWriter, request *http.Request) {
-	render.DrawTemplate(writer, request, "generals.page.tmpl", &models.TemplateData{})
+	render.Template(writer, request, "generals.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) Majors(writer http.ResponseWriter, request *http.Request) {
-	render.DrawTemplate(writer, request, "majors.page.tmpl", &models.TemplateData{})
+	render.Template(writer, request, "majors.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) Availability(writer http.ResponseWriter, request *http.Request) {
-	render.DrawTemplate(writer, request, "search-availability.page.tmpl", &models.TemplateData{})
+	render.Template(writer, request, "search-availability.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) PostAvailability(writer http.ResponseWriter, request *http.Request) {
@@ -107,7 +107,7 @@ func (m *Repository) PostAvailability(writer http.ResponseWriter, request *http.
 }
 
 func (m *Repository) Contact(writer http.ResponseWriter, request *http.Request) {
-	render.DrawTemplate(writer, request, "contact.page.tmpl", &models.TemplateData{})
+	render.Template(writer, request, "contact.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) ReservationSummary(writer http.ResponseWriter, request *http.Request) {
@@ -125,7 +125,7 @@ func (m *Repository) ReservationSummary(writer http.ResponseWriter, request *htt
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
 
-	render.DrawTemplate(writer, request, "reservation-summary.page.tmpl", &models.TemplateData{
+	render.Template(writer, request, "reservation-summary.page.tmpl", &models.TemplateData{
 		Data: data,
 	})
 }

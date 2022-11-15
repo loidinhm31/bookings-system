@@ -56,7 +56,7 @@ func getRoutes() http.Handler {
 	repo := NewRepo(&testApp)
 	NewHandlers(repo)
 
-	render.NewTemplates(&testApp)
+	render.NewRenderer(&testApp)
 	helpers.NewHelpers(&testApp)
 	/**
 	From main.go
