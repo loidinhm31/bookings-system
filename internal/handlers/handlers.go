@@ -3,22 +3,29 @@ package handlers
 import (
 	"fmt"
 	"github.com/loidinhm31/access-system/internal/config"
+	"github.com/loidinhm31/access-system/internal/driver"
 	"github.com/loidinhm31/access-system/internal/forms"
 	"github.com/loidinhm31/access-system/internal/helpers"
 	"github.com/loidinhm31/access-system/internal/models"
 	"github.com/loidinhm31/access-system/internal/render"
+	"github.com/loidinhm31/access-system/internal/repository"
+	"github.com/loidinhm31/access-system/internal/repository/dbrepo"
 	"net/http"
 )
 
 type Repository struct {
 	App *config.AppConfig
+	DB  repository.DatabaseRepo
 }
 
 var Repo *Repository
 
 // NewRepo creates a new repository for the handler
-func NewRepo(appConfig *config.AppConfig) *Repository {
-	return &Repository{App: appConfig}
+func NewRepo(appConfig *config.AppConfig, db *driver.DB) *Repository {
+	return &Repository{
+		App: appConfig,
+		DB:  dbrepo.NewPostgresRepo(db.SQL, appConfig),
+	}
 }
 
 // NewHandlers sets the repository for the handler

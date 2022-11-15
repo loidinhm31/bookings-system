@@ -1,11 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/gob"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/loidinhm31/access-system/internal/config"
 	"github.com/loidinhm31/access-system/internal/constants"
+	"github.com/loidinhm31/access-system/internal/driver"
 	"github.com/loidinhm31/access-system/internal/handlers"
 	"github.com/loidinhm31/access-system/internal/helpers"
 	"github.com/loidinhm31/access-system/internal/models"
@@ -24,10 +26,16 @@ var infoLog *log.Logger
 var errorLog *log.Logger
 
 func main() {
-	err := run()
+	db, err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func(SQL *sql.DB) {
+		err := SQL.Close()
+		if err != nil {
+			log.Fatal("Cannot close database connection", err)
+		}
+	}(db.SQL)
 
 	log.Println(fmt.Sprintf("Starting application on port %s", portNumber))
 
@@ -39,7 +47,7 @@ func main() {
 	log.Fatal(err)
 }
 
-func run() error {
+func run() (*driver.DB, error) {
 	// Values using in the session
 	gob.Register(models.Reservation{})
 
@@ -60,20 +68,28 @@ func run() error {
 
 	app.SessionManager = sessionManager
 
+	// connect to database
+	log.Println("Connecting to database...")
+	db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=postgres password=postgrespw")
+	if err != nil {
+		log.Fatal("Cannot connect to database! Stopping...", err)
+	}
+	log.Println("Connected to database")
+
 	templateCache, err := render.CreateTemplateCache(constants.PathToTemplate)
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return nil, err
 	}
 
 	app.TemplateCache = templateCache
 	app.UseCache = false
 
-	repo := handlers.NewRepo(&app)
+	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
 
 	render.NewTemplates(&app)
 	helpers.NewHelpers(&app)
 
-	return err
+	return db, err
 }
