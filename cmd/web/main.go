@@ -7,10 +7,12 @@ import (
 	"github.com/loidinhm31/access-system/internal/config"
 	"github.com/loidinhm31/access-system/internal/constants"
 	"github.com/loidinhm31/access-system/internal/handlers"
+	"github.com/loidinhm31/access-system/internal/helpers"
 	"github.com/loidinhm31/access-system/internal/models"
 	"github.com/loidinhm31/access-system/internal/render"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -18,6 +20,8 @@ const portNumber = ":8080"
 
 var app config.AppConfig
 var sessionManager *scs.SessionManager
+var infoLog *log.Logger
+var errorLog *log.Logger
 
 func main() {
 	err := run()
@@ -42,6 +46,12 @@ func run() error {
 	// production value
 	app.InProduction = false
 
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+
 	sessionManager = scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
 	sessionManager.Cookie.Persist = true
@@ -59,10 +69,11 @@ func run() error {
 	app.TemplateCache = templateCache
 	app.UseCache = false
 
-	repo := handlers.CreateNewRepo(&app)
-	handlers.SetRepository(repo)
+	repo := handlers.NewRepo(&app)
+	handlers.NewHandlers(repo)
 
 	render.NewTemplates(&app)
+	helpers.NewHelpers(&app)
 
 	return err
 }

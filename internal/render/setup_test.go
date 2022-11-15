@@ -5,6 +5,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/loidinhm31/access-system/internal/config"
 	"github.com/loidinhm31/access-system/internal/models"
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -28,6 +29,12 @@ func TestMain(m *testing.M) {
 	// production value
 	testApp.InProduction = false
 
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	testApp.InfoLog = infoLog
+
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	testApp.ErrorLog = errorLog
+
 	sessionManager = scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
 	sessionManager.Cookie.Persist = true
@@ -35,7 +42,6 @@ func TestMain(m *testing.M) {
 	sessionManager.Cookie.Secure = false
 
 	testApp.SessionManager = sessionManager
-
 	/**
 	From main.go
 	END

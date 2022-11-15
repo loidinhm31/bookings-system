@@ -7,10 +7,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/justinas/nosurf"
 	"github.com/loidinhm31/access-system/internal/config"
+	"github.com/loidinhm31/access-system/internal/helpers"
 	"github.com/loidinhm31/access-system/internal/models"
 	"github.com/loidinhm31/access-system/internal/render"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -29,6 +31,12 @@ func getRoutes() http.Handler {
 	// production value
 	testApp.InProduction = false
 
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	testApp.InfoLog = infoLog
+
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	testApp.ErrorLog = errorLog
+
 	sessionManager = scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
 	sessionManager.Cookie.Persist = true
@@ -45,10 +53,11 @@ func getRoutes() http.Handler {
 	testApp.TemplateCache = templateCache
 	testApp.UseCache = true // no need rebuild template, use template cache for testing
 
-	repo := CreateNewRepo(&testApp)
-	SetRepository(repo)
+	repo := NewRepo(&testApp)
+	NewHandlers(repo)
 
 	render.NewTemplates(&testApp)
+	helpers.NewHelpers(&testApp)
 	/**
 	From main.go
 	END

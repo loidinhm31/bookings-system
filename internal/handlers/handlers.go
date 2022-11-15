@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/loidinhm31/access-system/internal/config"
 	"github.com/loidinhm31/access-system/internal/forms"
+	"github.com/loidinhm31/access-system/internal/helpers"
 	"github.com/loidinhm31/access-system/internal/models"
 	"github.com/loidinhm31/access-system/internal/render"
-	"log"
 	"net/http"
 )
 
@@ -16,34 +16,22 @@ type Repository struct {
 
 var Repo *Repository
 
-// CreateNewRepo creates a new repository for the handler
-func CreateNewRepo(appConfig *config.AppConfig) *Repository {
+// NewRepo creates a new repository for the handler
+func NewRepo(appConfig *config.AppConfig) *Repository {
 	return &Repository{App: appConfig}
 }
 
-// SetRepository sets the repository for the handler
-func SetRepository(r *Repository) {
+// NewHandlers sets the repository for the handler
+func NewHandlers(r *Repository) {
 	Repo = r
 }
 
 func (m *Repository) Home(writer http.ResponseWriter, request *http.Request) {
-	remoteIp := request.RemoteAddr
-
-	m.App.SessionManager.Put(request.Context(), "remote_ip", remoteIp)
-
 	render.DrawTemplate(writer, request, "home.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) About(writer http.ResponseWriter, request *http.Request) {
-	// perform some logic
-	stringMap := make(map[string]string)
-
-	remoteIp := m.App.SessionManager.GetString(request.Context(), "remote_ip")
-	stringMap["remote_ip"] = remoteIp
-
-	render.DrawTemplate(writer, request, "about.page.tmpl", &models.TemplateData{
-		StringMap: stringMap,
-	})
+	render.DrawTemplate(writer, request, "about.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) Reservation(writer http.ResponseWriter, request *http.Request) {
@@ -59,7 +47,7 @@ func (m *Repository) Reservation(writer http.ResponseWriter, request *http.Reque
 func (m *Repository) PostReservation(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(writer, err)
 		return
 	}
 
@@ -118,7 +106,9 @@ func (m *Repository) Contact(writer http.ResponseWriter, request *http.Request) 
 func (m *Repository) ReservationSummary(writer http.ResponseWriter, request *http.Request) {
 	reservation, ok := m.App.SessionManager.Get(request.Context(), "reservation").(models.Reservation)
 	if !ok {
-		log.Println("Cannot get item from session")
+		// only redirect, not need to send error to page
+		m.App.ErrorLog.Println("Can't get reservation from session")
+
 		m.App.SessionManager.Put(request.Context(), "error", "Can't get reservation from session")
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
 		return
