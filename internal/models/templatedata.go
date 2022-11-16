@@ -1,6 +1,6 @@
 package models
 
-import "github.com/loidinhm31/access-system/internal/forms"
+import "github.com/loidinhm31/bookings-system/internal/forms"
 
 // TemplateData holds data sent from handlers to template
 type TemplateData struct {

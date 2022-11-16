@@ -2,8 +2,8 @@ package dbrepo
 
 import (
 	"database/sql"
-	"github.com/loidinhm31/access-system/internal/config"
-	"github.com/loidinhm31/access-system/internal/repository"
+	"github.com/loidinhm31/bookings-system/internal/config"
+	"github.com/loidinhm31/bookings-system/internal/repository"
 )
 
 type postgresDbRepo struct {

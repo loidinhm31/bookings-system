@@ -2,7 +2,7 @@ package dbrepo
 
 import (
 	"context"
-	"github.com/loidinhm31/access-system/internal/models"
+	"github.com/loidinhm31/bookings-system/internal/models"
 	"time"
 )
 

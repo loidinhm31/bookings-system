@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/loidinhm31/access-system/internal/config"
+	"github.com/loidinhm31/bookings-system/internal/config"
 	"net/http"
 	"runtime/debug"
 )

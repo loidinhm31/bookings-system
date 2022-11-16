@@ -1,4 +1,4 @@
-module github.com/loidinhm31/access-system
+module github.com/loidinhm31/bookings-system
 
 go 1.19
 

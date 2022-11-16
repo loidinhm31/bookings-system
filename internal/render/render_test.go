@@ -1,7 +1,7 @@
 package render
 
 import (
-	"github.com/loidinhm31/access-system/internal/models"
+	"github.com/loidinhm31/bookings-system/internal/models"
 	"net/http"
 	"testing"
 )
