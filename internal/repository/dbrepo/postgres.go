@@ -11,7 +11,7 @@ func (m *postgresDbRepo) AllUsers() bool {
 }
 
 func (m *postgresDbRepo) InsertReservation(res models.Reservation) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var newID int
