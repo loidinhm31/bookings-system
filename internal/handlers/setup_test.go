@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"testing"
 	"time"
 )
 
@@ -20,7 +21,7 @@ var testApp config.AppConfig
 var sessionManager *scs.SessionManager
 var pathToTemplateTest = "./../../templates"
 
-func getRoutes() http.Handler {
+func TestMain(m *testing.M) {
 	/**
 	From main.go
 	START
@@ -51,9 +52,9 @@ func getRoutes() http.Handler {
 	}
 
 	testApp.TemplateCache = templateCache
-	testApp.UseCache = true // no need rebuild template, use template cache for testing
+	testApp.UseCache = true // not need to rebuild template, use template cache for testing
 
-	repo := NewRepo(&testApp)
+	repo := NewTestRepo(&testApp)
 	NewHandlers(repo)
 
 	render.NewRenderer(&testApp)
@@ -63,6 +64,10 @@ func getRoutes() http.Handler {
 	END
 	*/
 
+	os.Exit(m.Run())
+}
+
+func getRoutes() http.Handler {
 	/**
 	From routes.go
 	START
