@@ -37,6 +37,9 @@ func main() {
 		}
 	}(db.SQL)
 
+	defer close(app.MailChannel)
+	listenForMail()
+
 	log.Println(fmt.Sprintf("Starting application on port %s", portNumber))
 
 	server := &http.Server{
@@ -53,6 +56,9 @@ func run() (*driver.DB, error) {
 	gob.Register(models.User{})
 	gob.Register(models.Room{})
 	gob.Register(models.Restriction{})
+
+	mailChannel := make(chan models.MailData)
+	app.MailChannel = mailChannel
 
 	// production value
 	app.InProduction = false

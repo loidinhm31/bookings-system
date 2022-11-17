@@ -46,6 +46,11 @@ func TestMain(m *testing.M) {
 
 	testApp.SessionManager = sessionManager
 
+	mailChannel := make(chan models.MailData)
+	testApp.MailChannel = mailChannel
+	defer close(mailChannel)
+	listenForMail()
+
 	templateCache, err := render.CreateTemplateCache(pathToTemplateTest)
 	if err != nil {
 		log.Fatal(err)
@@ -130,3 +135,11 @@ func SessionLoad(next http.Handler) http.Handler {
 From middleware.go
 END
 */
+
+func listenForMail() {
+	go func() {
+		for {
+			_ = <-testApp.MailChannel
+		}
+	}()
+}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/loidinhm31/bookings-system/internal/config"
 	"github.com/loidinhm31/bookings-system/internal/constants"
 	"github.com/loidinhm31/bookings-system/internal/driver"
@@ -161,6 +162,37 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
+
+	// send mail notifications - guest
+	htmlMessage := fmt.Sprintf(`
+		<strong>Reservation Confirmation</strong><br>
+		Dear %s, <br>
+		This is confirm your reservaton from %s to %s.
+	`, reservation.FirstName, reservation.StartDate.Format(constants.Layout), reservation.EndDate.Format(constants.Layout))
+
+	msg := models.MailData{
+		To:           reservation.Email,
+		From:         "me@here.com",
+		Subject:      "Reservation Confirmation",
+		Content:      htmlMessage,
+		TemplateMail: "basic.html",
+	}
+	m.App.MailChannel <- msg
+
+	// send mail notification top property owner
+	htmlMessage = fmt.Sprintf(`
+		<strong>Reservation Confirmation</strong><br>
+		A reservation has bee made for %s from %s to %s.
+	`, reservation.Room.RoomName, reservation.StartDate.Format(constants.Layout), reservation.EndDate.Format(constants.Layout))
+
+	msg = models.MailData{
+		To:           "me@there.com",
+		From:         "me@here.com",
+		Subject:      "Reservation Notification",
+		Content:      htmlMessage,
+		TemplateMail: "basic.html",
+	}
+	m.App.MailChannel <- msg
 
 	m.App.SessionManager.Put(r.Context(), "reservation", reservation) // store reservation to the session
 	m.App.SessionManager.Put(r.Context(), "success", "Submit")        // push success alert
