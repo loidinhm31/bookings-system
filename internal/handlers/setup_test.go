@@ -10,6 +10,7 @@ import (
 	"github.com/loidinhm31/bookings-system/internal/helpers"
 	"github.com/loidinhm31/bookings-system/internal/models"
 	"github.com/loidinhm31/bookings-system/internal/render"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -51,12 +52,7 @@ func TestMain(m *testing.M) {
 	defer close(mailChannel)
 	listenForMail()
 
-	templateCache, err := render.CreateTemplateCache(pathToTemplateTest)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testApp.TemplateCache = templateCache
+	testApp.TemplateCache = map[string]*template.Template{}
 	testApp.UseCache = true // not need to rebuild template, use template cache for testing
 
 	repo := NewTestRepo(&testApp)
