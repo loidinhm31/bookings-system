@@ -11,6 +11,7 @@ import (
 	"github.com/loidinhm31/bookings-system/internal/render"
 	"github.com/loidinhm31/bookings-system/internal/repository"
 	"github.com/loidinhm31/bookings-system/internal/repository/dbrepo"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -397,4 +398,57 @@ func (m *Repository) BookRoom(w http.ResponseWriter, r *http.Request) {
 	m.App.SessionManager.Put(r.Context(), "reservation", reservation)
 
 	http.Redirect(w, r, "make-reservation", http.StatusSeeOther)
+}
+
+func (m *Repository) ShowLogin(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+}
+
+func (m *Repository) PostLogin(w http.ResponseWriter, r *http.Request) {
+	// ensure renew token
+	_ = m.App.SessionManager.RenewToken(r.Context())
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	form := forms.New(r.PostForm)
+	form.Required("email", "password")
+	form.IsEmail("email")
+	if !form.Valid() {
+		render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		return
+	}
+
+	id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println(err)
+
+		m.App.SessionManager.Put(r.Context(), "error", "Invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	m.App.SessionManager.Put(r.Context(), "user_id", id)
+	m.App.SessionManager.Put(r.Context(), "success", "Logged in successfully")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (m *Repository) Logout(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.SessionManager.Destroy(r.Context())
+	_ = m.App.SessionManager.RenewToken(r.Context())
+
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "admin/admin-dashboard.page.tmpl", &models.TemplateData{})
 }

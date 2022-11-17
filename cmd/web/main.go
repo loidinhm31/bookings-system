@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/loidinhm31/bookings-system/internal/config"
-	"github.com/loidinhm31/bookings-system/internal/constants"
 	"github.com/loidinhm31/bookings-system/internal/driver"
 	"github.com/loidinhm31/bookings-system/internal/handlers"
 	"github.com/loidinhm31/bookings-system/internal/helpers"
 	"github.com/loidinhm31/bookings-system/internal/models"
 	"github.com/loidinhm31/bookings-system/internal/render"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -85,13 +85,7 @@ func run() (*driver.DB, error) {
 	}
 	log.Println("Connected to database")
 
-	templateCache, err := render.CreateTemplateCache(constants.PathToTemplate)
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-
-	app.TemplateCache = templateCache
+	app.TemplateCache = map[string]*template.Template{}
 	app.UseCache = false
 
 	repo := handlers.NewRepo(&app, db)

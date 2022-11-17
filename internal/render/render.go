@@ -26,19 +26,19 @@ func NewRenderer(a *config.AppConfig) {
 func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData *models.TemplateData) error {
 	var templateCache map[string]*template.Template
 
-	if app.UseCache {
-		// get the template cache from the app config
-		templateCache = app.TemplateCache
+	var t *template.Template
+	var err error
+	if app.UseCache && app.TemplateCache[tmpl] != nil {
+		// get requested template cache from the app config
+		t = templateCache[tmpl]
 	} else {
 		// this is just use for testing, so that we rebuild
 		// the cache on every request
-		templateCache, _ = CreateTemplateCache(constants.PathToTemplate)
-	}
-
-	// get requested template from cache
-	t, ok := templateCache[tmpl]
-	if !ok {
-		return errors.New("could not get template from template cache")
+		t, err = CreateTemplateCache(constants.PathToTemplate, "layout.tmpl", tmpl)
+		if err != nil {
+			log.Fatal(err)
+		}
+		app.TemplateCache[tmpl] = t
 	}
 
 	buff := new(bytes.Buffer)
@@ -48,7 +48,7 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData 
 	_ = t.Execute(buff, templateData)
 
 	// render the template
-	_, err := buff.WriteTo(w)
+	_, err = buff.WriteTo(w)
 	if err != nil {
 		log.Println("Error writing template", err)
 		return err
@@ -56,37 +56,34 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData 
 	return nil
 }
 
-func CreateTemplateCache(pathToTemplate string) (map[string]*template.Template, error) {
-	someCache := map[string]*template.Template{}
+func CreateTemplateCache(pathToTemplate, layoutSuffix, pageNameExt string) (*template.Template, error) {
+	var t *template.Template
 
-	// get all the files with pattern *page.tmpl
-	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.tmpl", pathToTemplate))
+	layouts, err := filepath.Glob(fmt.Sprintf("%s/*%s", pathToTemplate, layoutSuffix))
 	if err != nil {
-		return someCache, err
+		return t, err
 	}
 
-	for _, page := range pages {
-		name := filepath.Base(page)
-		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
-		if err != nil {
-			return someCache, err
+	page, err := filepath.Glob(fmt.Sprintf("%s/*%s", pathToTemplate, pageNameExt))
+	if err != nil {
+		if len(page) != 1 {
+			return t, errors.New("cannot find template")
 		}
-
-		matches, err := filepath.Glob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplate))
-		if err != nil {
-			return someCache, err
-		}
-
-		if len(matches) > 0 {
-			ts, err = ts.ParseGlob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplate))
-			if err != nil {
-				return someCache, err
-			}
-		}
-
-		someCache[name] = ts
+		return t, err
 	}
-	return someCache, nil
+
+	name := filepath.Base(page[0])
+
+	filenames := make([]string, 0, len(layouts)+1)
+	filenames = append(filenames, page[0])
+	filenames = append(filenames, layouts...)
+
+	t, err = template.New(name).ParseFiles(filenames...)
+	if err != nil {
+		return t, err
+	}
+
+	return t, nil
 }
 
 func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.TemplateData {
@@ -96,5 +93,9 @@ func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.
 	templateData.Warning = app.SessionManager.PopString(r.Context(), "warning")
 
 	templateData.CSRFToken = nosurf.Token(r)
+
+	if app.SessionManager.Exists(r.Context(), "user_id") {
+		templateData.IsAuthenticated = 1
+	}
 	return templateData
 }
