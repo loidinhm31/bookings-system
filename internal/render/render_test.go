@@ -2,6 +2,7 @@ package render
 
 import (
 	"github.com/loidinhm31/bookings-system/internal/models"
+	"html/template"
 	"net/http"
 	"testing"
 )
@@ -26,13 +27,9 @@ func TestAddDefaultData(t *testing.T) {
 	}
 }
 
-func TestDrawTemplate(t *testing.T) {
-	tc, err := CreateTemplateCache(pathToTemplate)
-	if err != nil {
-		t.Error(err)
-	}
-
-	app.TemplateCache = tc
+func TestTemplate(t *testing.T) {
+	app.PathToTemplate = "./../../templates"
+	app.TemplateCache = map[string]*template.Template{}
 	app.UseCache = true
 
 	r, err := getSession()
@@ -68,11 +65,4 @@ func getSession() (*http.Request, error) {
 
 func TestNewTemplates(t *testing.T) {
 	NewRenderer(app)
-}
-
-func TestCreateTemplateCache(t *testing.T) {
-	_, err := CreateTemplateCache(pathToTemplate)
-	if err != nil {
-		t.Error(err)
-	}
 }

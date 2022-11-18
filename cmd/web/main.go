@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/loidinhm31/bookings-system/internal/config"
-	"github.com/loidinhm31/bookings-system/internal/constants"
 	"github.com/loidinhm31/bookings-system/internal/driver"
 	"github.com/loidinhm31/bookings-system/internal/handlers"
 	"github.com/loidinhm31/bookings-system/internal/helpers"
 	"github.com/loidinhm31/bookings-system/internal/models"
 	"github.com/loidinhm31/bookings-system/internal/render"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -37,6 +37,9 @@ func main() {
 		}
 	}(db.SQL)
 
+	defer close(app.MailChannel)
+	listenForMail()
+
 	log.Println(fmt.Sprintf("Starting application on port %s", portNumber))
 
 	server := &http.Server{
@@ -53,6 +56,10 @@ func run() (*driver.DB, error) {
 	gob.Register(models.User{})
 	gob.Register(models.Room{})
 	gob.Register(models.Restriction{})
+	gob.Register(map[string]int{})
+
+	mailChannel := make(chan models.MailData)
+	app.MailChannel = mailChannel
 
 	// production value
 	app.InProduction = false
@@ -79,13 +86,8 @@ func run() (*driver.DB, error) {
 	}
 	log.Println("Connected to database")
 
-	templateCache, err := render.CreateTemplateCache(constants.PathToTemplate)
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-
-	app.TemplateCache = templateCache
+	app.PathToTemplate = "./templates"
+	app.TemplateCache = map[string]*template.Template{}
 	app.UseCache = false
 
 	repo := handlers.NewRepo(&app, db)
