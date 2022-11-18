@@ -12,10 +12,16 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
 var app *config.AppConfig
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"simpleDate": simpleDate,
+	"formatDate": formatDate,
+	"iterate":    iterate,
+	"add":        add,
+}
 
 // NewRenderer sets the config for the template package
 func NewRenderer(a *config.AppConfig) {
@@ -34,7 +40,7 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData 
 	} else {
 		// this is just use for testing, so that we rebuild
 		// the cache on every request
-		t, err = CreateTemplateCache(constants.PathToTemplate, "layout.tmpl", tmpl)
+		t, err = CreateTemplateCache(constants.PathToTemplate, "layout/*.layout.tmpl", tmpl)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -78,7 +84,7 @@ func CreateTemplateCache(pathToTemplate, layoutSuffix, pageNameExt string) (*tem
 	filenames = append(filenames, page[0])
 	filenames = append(filenames, layouts...)
 
-	t, err = template.New(name).ParseFiles(filenames...)
+	t, err = template.New(name).Funcs(functions).ParseFiles(filenames...)
 	if err != nil {
 		return t, err
 	}
@@ -98,4 +104,28 @@ func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.
 		templateData.IsAuthenticated = 1
 	}
 	return templateData
+}
+
+// returns time in YYYY-MM-DD format
+func simpleDate(t time.Time) string {
+	return t.Format(constants.Layout)
+}
+
+func formatDate(t time.Time, f string) string {
+	return t.Format(f)
+}
+
+// returns a slice of int, starting at 1, going to count
+func iterate(count int) []int {
+	var i int
+	var items []int
+
+	for i = 0; i < count; i++ {
+		items = append(items, i)
+	}
+	return items
+}
+
+func add(a, b int) int {
+	return a + b
 }
