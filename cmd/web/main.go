@@ -86,6 +86,7 @@ func run() (*driver.DB, error) {
 	}
 	log.Println("Connected to database")
 
+	app.PathToTemplate = "./templates"
 	app.TemplateCache = map[string]*template.Template{}
 	app.UseCache = false
 

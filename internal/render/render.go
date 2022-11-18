@@ -17,10 +17,10 @@ import (
 
 var app *config.AppConfig
 var functions = template.FuncMap{
-	"simpleDate": simpleDate,
-	"formatDate": formatDate,
-	"iterate":    iterate,
-	"add":        add,
+	"simpleDate": SimpleDate,
+	"formatDate": FormatDate,
+	"iterate":    Iterate,
+	"add":        Add,
 }
 
 // NewRenderer sets the config for the template package
@@ -30,19 +30,17 @@ func NewRenderer(a *config.AppConfig) {
 
 // Template renders templates using html/template
 func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData *models.TemplateData) error {
-	var templateCache map[string]*template.Template
-
 	var t *template.Template
 	var err error
-	if app.UseCache && app.TemplateCache[tmpl] != nil {
+	if app.UseCache && len(app.TemplateCache) > 0 && app.TemplateCache[tmpl] != nil {
 		// get requested template cache from the app config
-		t = templateCache[tmpl]
+		t = app.TemplateCache[tmpl]
 	} else {
 		// this is just use for testing, so that we rebuild
 		// the cache on every request
-		t, err = CreateTemplateCache(constants.PathToTemplate, "layout/*.layout.tmpl", tmpl)
+		t, err = createTemplateCache("layout/*.layout.tmpl", tmpl)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		app.TemplateCache[tmpl] = t
 	}
@@ -62,34 +60,33 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, templateData 
 	return nil
 }
 
-func CreateTemplateCache(pathToTemplate, layoutSuffix, pageNameExt string) (*template.Template, error) {
+func createTemplateCache(layoutSuffix, pageNameExt string) (*template.Template, error) {
 	var t *template.Template
 
-	layouts, err := filepath.Glob(fmt.Sprintf("%s/*%s", pathToTemplate, layoutSuffix))
+	layouts, err := filepath.Glob(fmt.Sprintf("%s/*%s", app.PathToTemplate, layoutSuffix))
 	if err != nil {
 		return t, err
 	}
 
-	page, err := filepath.Glob(fmt.Sprintf("%s/*%s", pathToTemplate, pageNameExt))
+	pages, err := filepath.Glob(fmt.Sprintf("%s/*%s", app.PathToTemplate, pageNameExt))
 	if err != nil {
-		if len(page) != 1 {
-			return t, errors.New("cannot find template")
+		return nil, err
+	}
+
+	if len(layouts) > 0 && len(pages) > 0 {
+		name := filepath.Base(pages[0])
+
+		filenames := make([]string, 0, len(layouts)+1)
+		filenames = append(filenames, pages[0])
+		filenames = append(filenames, layouts...)
+
+		t, err = template.New(name).Funcs(functions).ParseFiles(filenames...)
+		if err != nil {
+			return t, err
 		}
-		return t, err
+		return t, nil
 	}
-
-	name := filepath.Base(page[0])
-
-	filenames := make([]string, 0, len(layouts)+1)
-	filenames = append(filenames, page[0])
-	filenames = append(filenames, layouts...)
-
-	t, err = template.New(name).Funcs(functions).ParseFiles(filenames...)
-	if err != nil {
-		return t, err
-	}
-
-	return t, nil
+	return nil, errors.New("template file is not available")
 }
 
 func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.TemplateData {
@@ -106,17 +103,17 @@ func addDefaultData(templateData *models.TemplateData, r *http.Request) *models.
 	return templateData
 }
 
-// returns time in YYYY-MM-DD format
-func simpleDate(t time.Time) string {
+// SimpleDate returns time in YYYY-MM-DD format
+func SimpleDate(t time.Time) string {
 	return t.Format(constants.Layout)
 }
 
-func formatDate(t time.Time, f string) string {
+func FormatDate(t time.Time, f string) string {
 	return t.Format(f)
 }
 
-// returns a slice of int, starting at 1, going to count
-func iterate(count int) []int {
+// Iterate returns a slice of int, starting at 1, going to count
+func Iterate(count int) []int {
 	var i int
 	var items []int
 
@@ -126,6 +123,6 @@ func iterate(count int) []int {
 	return items
 }
 
-func add(a, b int) int {
+func Add(a, b int) int {
 	return a + b
 }
