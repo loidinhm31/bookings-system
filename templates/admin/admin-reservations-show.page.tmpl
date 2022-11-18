@@ -17,10 +17,6 @@
         <form method="post" action="/admin/reservations/{{$src}}/{{$res.ID}}" novalidate>
             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
 
-            {{/*            <input type="hidden" name="start_date" value="{{index .StringMap "start_date"}}">*/}}
-            {{/*            <input type="hidden" name="end_date" value="{{index .StringMap "end_date"}}">*/}}
-            {{/*            <input type="hidden" name="room_id" value="{{$res.RoomID}}">*/}}
-
             <input type="hidden" name="year" value="{{index .StringMap "year"}}">
             <input type="hidden" name="month" value="{{index .StringMap "month"}}">
 
