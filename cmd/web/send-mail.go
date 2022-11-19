@@ -11,6 +11,7 @@ import (
 )
 
 func listenForMail() {
+	log.Println("Starting mail listener...")
 	go func() {
 		for {
 			msg := <-app.MailChannel
