@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
+	"flag"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
+	"github.com/joho/godotenv"
 	"github.com/loidinhm31/bookings-system/internal/config"
 	"github.com/loidinhm31/bookings-system/internal/driver"
 	"github.com/loidinhm31/bookings-system/internal/handlers"
@@ -15,6 +17,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -61,8 +64,45 @@ func run() (*driver.DB, error) {
 	mailChannel := make(chan models.MailData)
 	app.MailChannel = mailChannel
 
+	// get environment
+	env := flag.String("env", "dev", "Environment")
+	flag.Parse()
+
+	log.Printf("Started with %s profile\n", *env)
+	var err error
+	if *env == "dev" {
+		err = godotenv.Load("./application_local.env")
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	} else if *env == "stage" {
+		err = godotenv.Load("./application_stage.env")
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	} else if *env == "prod" {
+		err = godotenv.Load("./application_prod.env")
+
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}
+
+	// Load env variables
+	prodMode := os.Getenv("PROD_MODE")
+	productionMode, _ := strconv.ParseBool(prodMode)
+	cache := os.Getenv("USE_CACHE")
+	useCache, _ := strconv.ParseBool(cache)
+
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASSWORD")
+	dbSsl := os.Getenv("DB_SSL")
+	dbName := os.Getenv("DB_NAME")
+
 	// production value
-	app.InProduction = false
+	app.InProduction = productionMode
 
 	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	app.InfoLog = infoLog
@@ -80,7 +120,9 @@ func run() (*driver.DB, error) {
 
 	// connect to database
 	log.Println("Connecting to database...")
-	db, err := driver.ConnectSQL("host=127.0.0.1 port=5432 dbname=bookings user=postgres password=postgrespw")
+	connStr := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s",
+		dbHost, dbPort, dbName, dbUser, dbPass, dbSsl)
+	db, err := driver.ConnectSQL(connStr)
 	if err != nil {
 		log.Fatal("Cannot connect to database! Stopping...", err)
 	}
@@ -88,7 +130,7 @@ func run() (*driver.DB, error) {
 
 	app.PathToTemplate = "./templates"
 	app.TemplateCache = map[string]*template.Template{}
-	app.UseCache = false
+	app.UseCache = useCache
 
 	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
