@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/justinas/nosurf"
-	"github.com/loidinhm31/bookings-system/internal/helpers"
+	"github.com/loidinhm31/go-bookings-system/internal/helpers"
 	"net/http"
 )
 

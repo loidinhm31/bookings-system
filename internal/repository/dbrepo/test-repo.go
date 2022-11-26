@@ -2,8 +2,8 @@ package dbrepo
 
 import (
 	"errors"
-	"github.com/loidinhm31/bookings-system/internal/constants"
-	"github.com/loidinhm31/bookings-system/internal/models"
+	"github.com/loidinhm31/go-bookings-system/internal/constants"
+	"github.com/loidinhm31/go-bookings-system/internal/models"
 	"log"
 	"time"
 )

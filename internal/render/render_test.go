@@ -1,7 +1,7 @@
 package render
 
 import (
-	"github.com/loidinhm31/bookings-system/internal/models"
+	"github.com/loidinhm31/go-bookings-system/internal/models"
 	"html/template"
 	"net/http"
 	"testing"

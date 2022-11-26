@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/loidinhm31/bookings-system/internal/models"
+	"github.com/loidinhm31/go-bookings-system/internal/models"
 	mail "github.com/xhit/go-simple-mail/v2"
 	"log"
 	"os"

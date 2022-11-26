@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/alexedwards/scs/v2"
-	"github.com/loidinhm31/bookings-system/internal/models"
+	"github.com/loidinhm31/go-bookings-system/internal/models"
 	"html/template"
 	"log"
 )

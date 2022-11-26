@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/loidinhm31/bookings-system/internal/models"
+	"github.com/loidinhm31/go-bookings-system/internal/models"
 	"time"
 )
 
